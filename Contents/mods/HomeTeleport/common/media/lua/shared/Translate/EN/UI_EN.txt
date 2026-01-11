@@ -1,0 +1,11 @@
+UI_EN = {
+    UI_HomeTeleport_SetHome = "Set Home",
+    UI_HomeTeleport_GoHome = "Go Home",
+    UI_HomeTeleport_ReturnVehicle = "Return to Vehicle",
+    UI_HomeTeleport_SetSuccess = "Home location set successfully!",
+    UI_HomeTeleport_GoHomeSuccess = "Teleported home successfully!",
+    UI_HomeTeleport_ReturnSuccess = "Returned to vehicle!",
+    UI_HomeTeleport_NotSet = "Home location not set yet!",
+    UI_HomeTeleport_Unsafe = "Cannot teleport home - zombies nearby!",
+    UI_HomeTeleport_NoLastPos = "No recorded vehicle position!"
+}

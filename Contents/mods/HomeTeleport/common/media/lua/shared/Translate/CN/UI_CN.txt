@@ -1,0 +1,11 @@
+UI_CN = {
+    UI_HomeTeleport_SetHome = "设置家",
+    UI_HomeTeleport_GoHome = "回家",
+    UI_HomeTeleport_ReturnVehicle = "返回车辆",
+    UI_HomeTeleport_SetSuccess = "家的位置设置成功！",
+    UI_HomeTeleport_GoHomeSuccess = "传送回家成功！",
+    UI_HomeTeleport_ReturnSuccess = "已返回车辆！",
+    UI_HomeTeleport_NotSet = "家的位置尚未设置！",
+    UI_HomeTeleport_Unsafe = "附近有僵尸，无法传送回家！",
+    UI_HomeTeleport_NoLastPos = "没有记录的车辆位置！"
+}

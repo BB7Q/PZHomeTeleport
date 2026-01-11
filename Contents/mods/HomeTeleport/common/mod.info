@@ -1,0 +1,5 @@
+name=HomeTeleport
+id=HomeTeleport
+poster=poster.png
+description= 添加回家功能，右键菜单可以设置家和传送回家
+description= 右键菜单中的"设置家"选项可以将当前位置设置为家，"回家"选项可以传送回设置的位置
