@@ -39,8 +39,8 @@ function HomeTeleport.saveHomePosition()
     end
 end
 
--- 设置当前位置为家（地面）
-function HomeTeleport.setHome()
+-- 确认设置家（实际执行设置的函数）
+function HomeTeleport.setHomeConfirmed(successText)
     local player = getPlayer()
     if not player then return end
 
@@ -51,7 +51,35 @@ function HomeTeleport.setHome()
 
     HomeTeleport.saveHomePosition()
 
-    getPlayer():Say(getText("UI_HomeTeleport_SetSuccess"))
+    getPlayer():Say(successText or getText("UI_HomeTeleport_SetSuccess"))
+end
+
+-- 显示设置家确认对话框
+function HomeTeleport.showSetHomeConfirmation(confirmText, successText)
+    local player = getPlayer()
+    if not player then return end
+
+    local modal = ISModalDialog:new(
+        (getCore():getScreenWidth() / 2) - 150,
+        (getCore():getScreenHeight() / 2) - 75,
+        300,
+        150,
+        confirmText or getText("UI_HomeTeleport_ConfirmSetHome"),
+        player,
+        true,  -- yesno
+        function(target, button)
+            if button.internal == "YES" then
+                HomeTeleport.setHomeConfirmed(successText)
+            end
+        end
+    )
+    modal:initialise()
+    modal:addToUIManager()
+end
+
+-- 设置当前位置为家（地面，带确认）
+function HomeTeleport.setHome()
+    HomeTeleport.showSetHomeConfirmation(getText("UI_HomeTeleport_ConfirmSetHome"), getText("UI_HomeTeleport_SetSuccess"))
 end
 
 
@@ -231,7 +259,25 @@ HomeTeleport.doWorldContextMenu = function(playerNum, context, worldobjects)
 
     -- 只有在车外才能设置家
     if not player:getVehicle() then
-        local setHomeOption = context:addOption(getText("UI_HomeTeleport_SetHome"), nil, HomeTeleport.setHome)
+        -- 根据是否已设置家来选择不同的文本
+        local menuText
+        local confirmText
+        local successText
+
+        if HomeTeleport.isHomeSet then
+            menuText = getText("UI_HomeTeleport_UpdateHome")
+            confirmText = getText("UI_HomeTeleport_ConfirmUpdateHome")
+            successText = getText("UI_HomeTeleport_UpdateSuccess")
+        else
+            menuText = getText("UI_HomeTeleport_SetHome")
+            confirmText = getText("UI_HomeTeleport_ConfirmSetHome")
+            successText = getText("UI_HomeTeleport_SetSuccess")
+        end
+
+        local setHomeOption = context:addOption(menuText, nil, function()
+            HomeTeleport.showSetHomeConfirmation(confirmText, successText)
+        end)
+        
         -- 为设置家选项添加图标
         local setHomeIcon = getTexture("media/ui/home_icon.png")
         if setHomeIcon and setHomeOption then
