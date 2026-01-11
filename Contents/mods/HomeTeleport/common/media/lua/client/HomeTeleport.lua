@@ -231,12 +231,24 @@ HomeTeleport.doWorldContextMenu = function(playerNum, context, worldobjects)
 
     -- 只有在车外才能设置家
     if not player:getVehicle() then
-        context:addOption(getText("UI_HomeTeleport_SetHome"), nil, HomeTeleport.setHome)
+        local setHomeOption = context:addOption(getText("UI_HomeTeleport_SetHome"), nil, HomeTeleport.setHome)
+        -- 为设置家选项添加图标
+        local setHomeIcon = getTexture("media/ui/home_icon.png")
+        if setHomeIcon and setHomeOption then
+            setHomeOption.iconTexture = setHomeIcon
+            setHomeOption.icon = nil
+        end
     end
 
     -- 添加返回车辆选项（如果之前从车辆回家过）
     if HomeTeleport.wasInVehicle and HomeTeleport.wasInVehicleLastPos then
-        context:addOption(getText("UI_HomeTeleport_ReturnVehicle"), nil, HomeTeleport.returnToLastPosition)
+        local returnVehicleOption = context:addOption(getText("UI_HomeTeleport_ReturnVehicle"), nil, HomeTeleport.returnToLastPosition)
+        -- 为返回车辆选项添加图标
+        local returnVehicleIcon = getTexture("media/ui/car_icon.png")
+        if returnVehicleIcon and returnVehicleOption then
+            returnVehicleOption.iconTexture = returnVehicleIcon
+            returnVehicleOption.icon = nil
+        end
     end
 
     -- 移除地面上的回家选项，只在车辆上通过轮盘回家
@@ -253,7 +265,7 @@ function ISVehicleMenu.showRadialMenu(playerObj)
     if playerObj:getVehicle() and HomeTeleport.isHomeSet then
         local menu = getPlayerRadialMenu(playerObj:getPlayerNum())
         -- 添加回家选项，使用home图标
-        menu:addSlice(getText("UI_HomeTeleport_GoHome"), getTexture("media/textures/home.png"), HomeTeleport.goHome, playerObj)
+        menu:addSlice(getText("UI_HomeTeleport_GoHome"), getTexture("media/ui/home_icon.png"), HomeTeleport.goHome, playerObj)
     end
 end
 
