@@ -9,7 +9,6 @@
 
 [h2]功能特点[/h2]
 [list]
-    [*] 安全传送：回家时自动检查周围是否有僵尸
     [*] 车辆保留：从车辆传送回家后会记录车辆位置
     [*] 沙箱支持：可配置固定家的位置
 [/list]
@@ -29,7 +28,13 @@
 [list]
     [*] 传送回家功能只能在车辆上使用
     [*] 设置家的位置需要在地面上
-    [*] 多人模式尚未完成测试
+    [*] 多人模式尚未完成
+[/list]
+
+[h2]待办事项[/h2]
+[list]
+    [*] 增加只能绑定一辆车的配置
+    [*] 多人模式数据持久化
 [/list]
 
 Mod ID: HomeTeleport
@@ -45,7 +50,6 @@ Mod ID: HomeTeleport
 
 [h2]Features[/h2]
 [list]
-    [*] Safe Teleportation: Automatically checks for zombies nearby when teleporting home
     [*] Vehicle Preservation: Records vehicle position when teleporting from vehicles
     [*] Sandbox Support: Configurable fixed home position
 [/list]
@@ -65,7 +69,13 @@ When fixed position is enabled, players cannot manually modify home location and
 [list]
     [*] Teleport home function can only be used from vehicles
     [*] Setting home location requires being on the ground
-    [*] Multiplayer mode not fully tested yet
+    [*] Multiplayer mode not completed yet
+[/list]
+
+[h2]To-Do List[/h2]
+[list]
+    [*] Add configuration for binding only one vehicle
+    [*] Multiplayer mode data persistence
 [/list]
 
 Mod ID: HomeTeleport

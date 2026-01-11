@@ -122,16 +122,6 @@ function HomeTeleport.goHome()
     local player = getPlayer()
     if not player then return end
 
-    -- 检查僵尸
-    local zombies = getCell():getZombieList()
-    for i = 0, zombies:size() - 1 do
-        local zombie = zombies:get(i)
-        if zombie and player:DistTo(zombie) < 3 then
-            player:Say(getText("UI_HomeTeleport_Unsafe"))
-            return
-        end
-    end
-
     -- 记录车辆信息
     local currentVehicle = player:getVehicle()
     if currentVehicle then
