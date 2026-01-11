@@ -1,0 +1,13 @@
+Sandbox_EN = 
+{
+	Sandbox_HomeTeleport = "Home Teleport",
+	
+	Sandbox_HomeTeleport_EnableFixedHomePosition = "Enable Fixed Home Position",
+	Sandbox_HomeTeleport_EnableFixedHomePosition_tooltip = "Enables the use of fixed coordinates for home position instead of using the current position when setting home.",
+	Sandbox_HomeTeleport_FixedHomePositionX = "Fixed Home Position X",
+	Sandbox_HomeTeleport_FixedHomePositionX_tooltip = "X coordinate for the fixed home position.",
+	Sandbox_HomeTeleport_FixedHomePositionY = "Fixed Home Position Y",
+	Sandbox_HomeTeleport_FixedHomePositionY_tooltip = "Y coordinate for the fixed home position.",
+	Sandbox_HomeTeleport_FixedHomePositionZ = "Fixed Home Position Z",
+	Sandbox_HomeTeleport_FixedHomePositionZ_tooltip = "Z coordinate for the fixed home position.",
+}

@@ -1,6 +1,7 @@
 UI_EN = {
     UI_HomeTeleport_SetHome = "Set Home",
     UI_HomeTeleport_UpdateHome = "Update Home Location",
+    UI_HomeTeleport_SandboxHome = "Home Location (Fixed)",
     UI_HomeTeleport_GoHome = "Go Home",
     UI_HomeTeleport_ReturnVehicle = "Return to Vehicle",
     UI_HomeTeleport_SetSuccess = "Home location set successfully!",
@@ -11,5 +12,6 @@ UI_EN = {
     UI_HomeTeleport_Unsafe = "Cannot teleport home - zombies nearby!",
     UI_HomeTeleport_NoLastPos = "No recorded vehicle position!",
     UI_HomeTeleport_ConfirmSetHome = "Are you sure you want to set this location as home?",
-    UI_HomeTeleport_ConfirmUpdateHome = "Are you sure you want to update your home location?"
+    UI_HomeTeleport_ConfirmUpdateHome = "Are you sure you want to update your home location?",
+    UI_HomeTeleport_SandboxLocked = "Home location is fixed by sandbox configuration and cannot be changed manually!"
 }

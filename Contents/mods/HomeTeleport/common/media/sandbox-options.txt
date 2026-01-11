@@ -1,0 +1,39 @@
+VERSION = 1,
+
+option HomeTeleport.EnableFixedHomePosition
+{
+	type = boolean,
+	default = false,
+	page = HomeTeleport,
+	translation = HomeTeleport_EnableFixedHomePosition,
+}
+
+option HomeTeleport.FixedHomePositionX
+{
+	type = integer,
+	min = -100000,
+	max = 100000,
+	default = 0,
+	page = HomeTeleport,
+	translation = HomeTeleport_FixedHomePositionX,
+}
+
+option HomeTeleport.FixedHomePositionY
+{
+	type = integer,
+	min = -100000,
+	max = 100000,
+	default = 0,
+	page = HomeTeleport,
+	translation = HomeTeleport_FixedHomePositionY,
+}
+
+option HomeTeleport.FixedHomePositionZ
+{
+	type = integer,
+	min = -100000,
+	max = 100000,
+	default = 0,
+	page = HomeTeleport,
+	translation = HomeTeleport_FixedHomePositionZ,
+}

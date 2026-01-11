@@ -1,0 +1,13 @@
+Sandbox_CN = 
+{
+	Sandbox_HomeTeleport = "回家传送",
+	
+	Sandbox_HomeTeleport_EnableFixedHomePosition = "启用固定家位置",
+	Sandbox_HomeTeleport_EnableFixedHomePosition_tooltip = "启用后，设置家位置时将使用固定坐标而不是当前位置。",
+	Sandbox_HomeTeleport_FixedHomePositionX = "固定家位置 X 坐标",
+	Sandbox_HomeTeleport_FixedHomePositionX_tooltip = "固定家位置的 X 坐标。",
+	Sandbox_HomeTeleport_FixedHomePositionY = "固定家位置 Y 坐标",
+	Sandbox_HomeTeleport_FixedHomePositionY_tooltip = "固定家位置的 Y 坐标。",
+	Sandbox_HomeTeleport_FixedHomePositionZ = "固定家位置 Z 坐标",
+	Sandbox_HomeTeleport_FixedHomePositionZ_tooltip = "固定家位置的 Z 坐标。",
+}

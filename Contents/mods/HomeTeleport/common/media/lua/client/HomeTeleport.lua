@@ -5,6 +5,7 @@ HomeTeleport.homePosition = {x = 0, y = 0, z = 0}
 HomeTeleport.isHomeSet = false
 HomeTeleport.wasInVehicle = false
 HomeTeleport.wasInVehicleLastPos = nil
+HomeTeleport.useSandboxHome = false
 
 -- 加载保存的家的位置
 function HomeTeleport.loadHomePosition()
@@ -17,6 +18,31 @@ function HomeTeleport.loadHomePosition()
                 HomeTeleport.homePosition = data.homePosition
                 HomeTeleport.isHomeSet = data.isHomeSet or false
             end
+        end
+    end
+
+    -- 检查sandbox配置
+    HomeTeleport.checkSandboxConfig()
+end
+
+-- 检查sandbox配置
+function HomeTeleport.checkSandboxConfig()
+    if getSandboxOptions() then
+        local enableOption = getSandboxOptions():getOptionByName("HomeTeleport.EnableFixedHomePosition")
+        local xOption = getSandboxOptions():getOptionByName("HomeTeleport.FixedHomePositionX")
+        local yOption = getSandboxOptions():getOptionByName("HomeTeleport.FixedHomePositionY")
+        local zOption = getSandboxOptions():getOptionByName("HomeTeleport.FixedHomePositionZ")
+
+        if enableOption and enableOption:getValue() then
+            HomeTeleport.useSandboxHome = true
+            HomeTeleport.homePosition.x = xOption and xOption:getValue() or 0
+            HomeTeleport.homePosition.y = yOption and yOption:getValue() or 0
+            HomeTeleport.homePosition.z = zOption and zOption:getValue() or 0
+            HomeTeleport.isHomeSet = true
+            print("[HomeTeleport] Using sandbox home position: " ..
+                  HomeTeleport.homePosition.x .. ", " ..
+                  HomeTeleport.homePosition.y .. ", " ..
+                  HomeTeleport.homePosition.z)
         end
     end
 end
@@ -43,6 +69,12 @@ end
 function HomeTeleport.setHomeConfirmed(successText)
     local player = getPlayer()
     if not player then return end
+
+    -- 如果使用sandbox配置，不允许手动设置
+    if HomeTeleport.useSandboxHome then
+        getPlayer():Say(getText("UI_HomeTeleport_SandboxLocked"))
+        return
+    end
 
     HomeTeleport.homePosition.x = player:getX()
     HomeTeleport.homePosition.y = player:getY()
@@ -258,7 +290,7 @@ HomeTeleport.doWorldContextMenu = function(playerNum, context, worldobjects)
     if not player or not player:isAlive() then return end
 
     -- 只有在车外才能设置家
-    if not player:getVehicle() then
+    if not player:getVehicle() and not HomeTeleport.useSandboxHome then
         -- 根据是否已设置家来选择不同的文本
         local menuText
         local confirmText
@@ -277,7 +309,7 @@ HomeTeleport.doWorldContextMenu = function(playerNum, context, worldobjects)
         local setHomeOption = context:addOption(menuText, nil, function()
             HomeTeleport.showSetHomeConfirmation(confirmText, successText)
         end)
-        
+
         -- 为设置家选项添加图标
         local setHomeIcon = getTexture("media/ui/home_icon.png")
         if setHomeIcon and setHomeOption then
