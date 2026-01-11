@@ -1,0 +1,71 @@
+[center][h1]HomeTeleport - 回家传送[/h1][/center]
+
+[h2]使用方法[/h2]
+[list]
+    [*] 设置家的位置：在地面上右键点击，选择"设置家的位置"
+    [*] 传送回家：在车辆上按径向菜单（默认R键），选择回家图标
+    [*] 返回车辆：从车辆传送回家后，在世界界面右键点击选择"返回车辆"
+[/list]
+
+[h2]功能特点[/h2]
+[list]
+    [*] 安全传送：回家时自动检查周围是否有僵尸
+    [*] 车辆保留：从车辆传送回家后会记录车辆位置
+    [*] 沙箱支持：可配置固定家的位置
+[/list]
+
+[h2]沙箱配置[/h2]
+在游戏沙箱设置中可配置固定家的位置：
+[list]
+    [*] HomeTeleport.EnableFixedHomePosition - 启用固定家的位置
+    [*] HomeTeleport.FixedHomePositionX - 固定家的X坐标
+    [*] HomeTeleport.FixedHomePositionY - 固定家的Y坐标
+    [*] HomeTeleport.FixedHomePositionZ - 固定家的Z坐标
+[/list]
+
+启用固定位置后，玩家无法手动修改家的位置，系统将使用预设坐标。
+
+[h2]注意事项[/h2]
+[list]
+    [*] 传送回家功能只能在车辆上使用
+    [*] 设置家的位置需要在地面上
+    [*] 多人模式尚未完成测试
+[/list]
+
+Mod ID: HomeTeleport
+
+[hr]
+
+[h2]How to Use[/h2]
+[list]
+    [*] Set Home Location: Right-click on the ground and select "Set Home Location"
+    [*] Teleport Home: Use the radial menu (default R key) in vehicles and select the home icon
+    [*] Return to Vehicle: After teleporting from a vehicle, right-click in the world and select "Return to Vehicle"
+[/list]
+
+[h2]Features[/h2]
+[list]
+    [*] Safe Teleportation: Automatically checks for zombies nearby when teleporting home
+    [*] Vehicle Preservation: Records vehicle position when teleporting from vehicles
+    [*] Sandbox Support: Configurable fixed home position
+[/list]
+
+[h2]Sandbox Configuration[/h2]
+Configure fixed home position in game sandbox settings:
+[list]
+    [*] HomeTeleport.EnableFixedHomePosition - Enable fixed home position
+    [*] HomeTeleport.FixedHomePositionX - Fixed home X coordinate
+    [*] HomeTeleport.FixedHomePositionY - Fixed home Y coordinate
+    [*] HomeTeleport.FixedHomePositionZ - Fixed home Z coordinate
+[/list]
+
+When fixed position is enabled, players cannot manually modify home location and the system will use preset coordinates.
+
+[h2]Important Notes[/h2]
+[list]
+    [*] Teleport home function can only be used from vehicles
+    [*] Setting home location requires being on the ground
+    [*] Multiplayer mode not fully tested yet
+[/list]
+
+Mod ID: HomeTeleport

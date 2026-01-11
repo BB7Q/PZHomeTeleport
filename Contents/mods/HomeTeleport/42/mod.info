@@ -1,5 +1,6 @@
 name=HomeTeleport
 id=HomeTeleport
+modversion=1.0.0
 poster=poster.png
 icon=icon.png
 description= Set your home location via the right-click menu when outside a vehicle, and teleport back home via the vehicle radial menu while inside a vehicle.

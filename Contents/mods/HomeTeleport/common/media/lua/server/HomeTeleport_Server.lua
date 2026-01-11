@@ -43,7 +43,7 @@ HomeTeleportServer.Commands.saveHomePosition = function(playerObj, args)
     
     -- 保存家的位置到玩家个人数据
     modData.HomeTeleport.homePosition = args.homePosition
-    modData.HomeTeleport.isHomeSet = args.isHomeSet or true
+    modData.HomeTeleport.isHomeSet = args.isHomeSet ~= nil and args.isHomeSet or true
 
     print("[HomeTeleport] Player " .. tostring(playerObj:getUsername()) .. " saved home position: (" ..
           args.homePosition.x .. ", " .. args.homePosition.y .. ", " .. args.homePosition.z .. ")")
@@ -79,9 +79,6 @@ end
 local function onConnected(playerObj)
     if not playerObj then return end
     HomeTeleportServer.InitPlayerHome(playerObj)
-    
-    -- 向客户端发送当前家的位置数据
-    HomeTeleportServer.Commands.requestHomePosition(playerObj)
 end
 
 -- **************************************************************************************
@@ -96,14 +93,23 @@ end
 -- **************************************************************************************
 -- 注册事件
 -- **************************************************************************************
-if Events.OnClientCommand then
-    Events.OnClientCommand.Add(onClientCommand)
-    print("[HomeTeleport] Registered OnClientCommand")
-end
-
-if Events.OnConnected then
-    Events.OnConnected.Add(onConnected)
-    print("[HomeTeleport] Registered OnConnected")
+-- B42 兼容性事件注册
+if Events then
+    -- 客户端命令处理（必须）
+    if Events.OnClientCommand then
+        Events.OnClientCommand.Add(onClientCommand)
+        print("[HomeTeleport] Registered OnClientCommand")
+    else
+        print("[HomeTeleport] Warning: OnClientCommand event not available")
+    end
+    
+    -- 玩家连接事件（可选）
+    if Events.OnConnected then
+        Events.OnConnected.Add(onConnected)
+        print("[HomeTeleport] Registered OnConnected")
+    else
+        print("[HomeTeleport] Info: OnConnected event not available, using OnServerStarted only")
+    end
 end
 
 -- 初始化已在线的玩家（服务器启动时）
@@ -117,9 +123,12 @@ local function onServerStarted()
     end
 end
 
-if Events.OnServerStarted then
+-- 服务器启动事件（必须）
+if Events and Events.OnServerStarted then
     Events.OnServerStarted.Add(onServerStarted)
     print("[HomeTeleport] Registered OnServerStarted")
+else
+    print("[HomeTeleport] Error: OnServerStarted event not available - mod may not function properly")
 end
 
 print("[HomeTeleport] Server module loaded successfully")
