@@ -13,4 +13,3 @@ Sandbox_EN =
 	Sandbox_HomeTeleport_VehicleBindLimit = "Limit to Single Vehicle Binding",
 	Sandbox_HomeTeleport_VehicleBindLimit_tooltip = "When enabled, only one vehicle can be bound. Disable to allow multiple vehicles.",
 }
-}
