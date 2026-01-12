@@ -33,7 +33,7 @@
 
 [h2]待办事项[/h2]
 [list]
-    [*] 增加只能绑定一辆车的配置
+    [*] ~~增加只能绑定一辆车的配置~~ ✓ 已完成
     [*] 多人模式数据持久化
 [/list]
 
@@ -74,7 +74,7 @@ When fixed position is enabled, players cannot manually modify home location and
 
 [h2]To-Do List[/h2]
 [list]
-    [*] Add configuration for binding only one vehicle
+    [*] ~~Add configuration for binding only one vehicle~~ ✓ Completed
     [*] Multiplayer mode data persistence
 [/list]
 

@@ -9,9 +9,12 @@ UI_CN = {
     UI_HomeTeleport_GoHomeSuccess = "传送回家成功！",
     UI_HomeTeleport_ReturnSuccess = "已返回车辆！",
     UI_HomeTeleport_NotSet = "家的位置尚未设置！",
-    UI_HomeTeleport_Unsafe = "附近有僵尸，无法传送回家！",
     UI_HomeTeleport_NoLastPos = "没有记录的车辆位置！",
     UI_HomeTeleport_ConfirmSetHome = "确定要将当前位置设置为家吗？",
     UI_HomeTeleport_ConfirmUpdateHome = "确定要更新家的位置吗？",
-    UI_HomeTeleport_SandboxLocked = "家位置已通过沙盒配置固定，无法手动修改！"
+    UI_HomeTeleport_SandboxLocked = "家位置已通过沙盒配置固定，无法手动修改！",
+    UI_HomeTeleport_BindVehicle = "绑定车辆传送",
+    UI_HomeTeleport_BindSuccess = "车辆绑定成功！",
+    UI_HomeTeleport_ConfirmBindVehicle = "确定要绑定这辆车的传送功能吗？",
+    UI_HomeTeleport_ConfirmRebindVehicle = "确定要更换绑定的车辆吗？这将解除之前车辆的绑定。"
 }

@@ -37,3 +37,11 @@ option HomeTeleport.FixedHomePositionZ
 	page = HomeTeleport,
 	translation = HomeTeleport_FixedHomePositionZ,
 }
+
+option HomeTeleport.VehicleBindLimit
+{
+	type = boolean,
+	default = true,
+	page = HomeTeleport,
+	translation = HomeTeleport_VehicleBindLimit,
+}

@@ -10,4 +10,7 @@ Sandbox_EN =
 	Sandbox_HomeTeleport_FixedHomePositionY_tooltip = "Y coordinate for the fixed home position.",
 	Sandbox_HomeTeleport_FixedHomePositionZ = "Fixed Home Position Z",
 	Sandbox_HomeTeleport_FixedHomePositionZ_tooltip = "Z coordinate for the fixed home position.",
+	Sandbox_HomeTeleport_VehicleBindLimit = "Limit to Single Vehicle Binding",
+	Sandbox_HomeTeleport_VehicleBindLimit_tooltip = "When enabled, only one vehicle can be bound. Disable to allow multiple vehicles.",
+}
 }

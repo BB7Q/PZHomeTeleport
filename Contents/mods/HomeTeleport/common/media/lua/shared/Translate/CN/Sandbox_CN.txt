@@ -10,4 +10,7 @@ Sandbox_CN =
 	Sandbox_HomeTeleport_FixedHomePositionY_tooltip = "固定家位置的 Y 坐标。",
 	Sandbox_HomeTeleport_FixedHomePositionZ = "固定家位置 Z 坐标",
 	Sandbox_HomeTeleport_FixedHomePositionZ_tooltip = "固定家位置的 Z 坐标。",
+	Sandbox_HomeTeleport_VehicleBindLimit = "限制只能绑定一辆车",
+	Sandbox_HomeTeleport_VehicleBindLimit_tooltip = "启用后，只能绑定一辆车。禁用则允许绑定多辆车。",
+}
 }

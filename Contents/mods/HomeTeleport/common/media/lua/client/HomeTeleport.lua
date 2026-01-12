@@ -6,6 +6,8 @@ HomeTeleport.isHomeSet = false
 HomeTeleport.wasInVehicle = false
 HomeTeleport.wasInVehicleLastPos = nil
 HomeTeleport.useSandboxHome = false
+HomeTeleport.boundVehicles = {}
+HomeTeleport.currentBoundVehicleId = nil
 
 -- **********************************************************************************
 -- 加载保存的家的位置
@@ -30,6 +32,7 @@ function HomeTeleport.loadHomePosition()
         local xOption = sandboxOptions:getOptionByName("HomeTeleport.FixedHomePositionX")
         local yOption = sandboxOptions:getOptionByName("HomeTeleport.FixedHomePositionY")
         local zOption = sandboxOptions:getOptionByName("HomeTeleport.FixedHomePositionZ")
+        local bindLimitOption = sandboxOptions:getOptionByName("HomeTeleport.VehicleBindLimit")
 
         if enableOption and enableOption:getValue() then
             HomeTeleport.useSandboxHome = true
@@ -37,6 +40,25 @@ function HomeTeleport.loadHomePosition()
             HomeTeleport.homePosition.y = yOption and yOption:getValue() or 0
             HomeTeleport.homePosition.z = zOption and zOption:getValue() or 0
             HomeTeleport.isHomeSet = true
+        end
+        
+        -- 根据绑定限制配置加载车辆绑定数据
+        if bindLimitOption then
+            local limited = bindLimitOption:getValue()
+            if ModData.exists("HomeTeleport") then
+                local data = ModData.get("HomeTeleport")
+                if data then
+                    if limited then
+                        -- 限制模式：加载保存的绑定数据
+                        HomeTeleport.boundVehicles = data.boundVehicles or {}
+                        HomeTeleport.currentBoundVehicleId = data.currentBoundVehicleId or nil
+                    else
+                        -- 非限制模式：不使用绑定数据，允许所有车辆
+                        HomeTeleport.boundVehicles = {}
+                        HomeTeleport.currentBoundVehicleId = nil
+                    end
+                end
+            end
         end
     end
 end
@@ -49,9 +71,23 @@ function HomeTeleport.saveHomePosition()
         ModData.add("HomeTeleport", {})
     end
 
+    local sandboxOptions = getSandboxOptions()
+    local limitOption = sandboxOptions and sandboxOptions:getOptionByName("HomeTeleport.VehicleBindLimit")
+    local limited = limitOption and limitOption:getValue()
+    
     local data = ModData.get("HomeTeleport")
     data.homePosition = HomeTeleport.homePosition
     data.isHomeSet = HomeTeleport.isHomeSet
+    
+    -- 只在限制模式下保存车辆绑定数据
+    if limited ~= false then
+        data.boundVehicles = HomeTeleport.boundVehicles
+        data.currentBoundVehicleId = HomeTeleport.currentBoundVehicleId
+    else
+        data.boundVehicles = {}
+        data.currentBoundVehicleId = nil
+    end
+    
     ModData.transmit("HomeTeleport")
 end
 
@@ -77,9 +113,9 @@ function HomeTeleport.setHomeConfirmed(successText)
 end
 
 -- **********************************************************************************
--- 显示设置家确认对话框
+-- 显示确认对话框
 -- **********************************************************************************
-function HomeTeleport.showSetHomeConfirmation(confirmText, successText)
+function HomeTeleport.showConfirmationDialog(confirmText, onYes)
     local player = getPlayer()
     if not player then return end
 
@@ -88,17 +124,29 @@ function HomeTeleport.showSetHomeConfirmation(confirmText, successText)
         (getCore():getScreenHeight() / 2) - 75,
         300,
         150,
-        confirmText or getText("UI_HomeTeleport_ConfirmSetHome"),
+        confirmText,
         player,
         true,
         function(target, button)
-            if button.internal == "YES" then
-                HomeTeleport.setHomeConfirmed(successText)
+            if button.internal == "YES" and onYes then
+                onYes()
             end
         end
     )
     modal:initialise()
     modal:addToUIManager()
+end
+
+-- **********************************************************************************
+-- 显示设置家确认对话框
+-- **********************************************************************************
+function HomeTeleport.showSetHomeConfirmation(confirmText, successText)
+    HomeTeleport.showConfirmationDialog(
+        confirmText or getText("UI_HomeTeleport_ConfirmSetHome"),
+        function()
+            HomeTeleport.setHomeConfirmed(successText)
+        end
+    )
 end
 
 -- **********************************************************************************
@@ -154,6 +202,94 @@ function HomeTeleport.goHome()
     player:setLastZ(HomeTeleport.homePosition.z)
 
     player:Say(getText("UI_HomeTeleport_GoHomeSuccess"))
+end
+
+-- **********************************************************************************
+-- 显示绑定车辆确认对话框
+-- **********************************************************************************
+function HomeTeleport.showBindVehicleConfirmation(vehicle, playerObj)
+    local sandboxOptions = getSandboxOptions()
+    local limitOption = sandboxOptions and sandboxOptions:getOptionByName("HomeTeleport.VehicleBindLimit")
+    local limited = limitOption and limitOption:getValue()
+    
+    local confirmText = getText("UI_HomeTeleport_ConfirmBindVehicle")
+    
+    -- 如果限制模式开启且已绑定其他车辆，显示更换绑定的提示
+    if limited ~= false and HomeTeleport.currentBoundVehicleId and HomeTeleport.currentBoundVehicleId ~= vehicle:getId() then
+        confirmText = getText("UI_HomeTeleport_ConfirmRebindVehicle")
+    end
+    
+    HomeTeleport.showConfirmationDialog(
+        confirmText,
+        function()
+            local vehicleId = vehicle:getId()
+            
+            -- 如果更换了绑定车辆，重置返回数据
+            if HomeTeleport.currentBoundVehicleId and HomeTeleport.currentBoundVehicleId ~= vehicleId then
+                HomeTeleport.wasInVehicle = false
+                HomeTeleport.wasInVehicleLastPos = nil
+            end
+            
+            HomeTeleport.currentBoundVehicleId = vehicleId
+            HomeTeleport.boundVehicles = {}
+            HomeTeleport.boundVehicles[vehicleId] = true
+            HomeTeleport.saveHomePosition()
+            
+            playerObj:Say(getText("UI_HomeTeleport_BindSuccess"))
+        end
+    )
+end
+
+-- **********************************************************************************
+-- 绑定车辆（如果限制模式开启，直接更换绑定）
+-- **********************************************************************************
+function HomeTeleport.bindVehicle(vehicle)
+    local player = getPlayer()
+    if not player or not vehicle then return false end
+    
+    local vehicleId = vehicle:getId()
+    
+    -- 如果更换了绑定车辆，重置返回数据
+    if HomeTeleport.currentBoundVehicleId and HomeTeleport.currentBoundVehicleId ~= vehicleId then
+        HomeTeleport.wasInVehicle = false
+        HomeTeleport.wasInVehicleLastPos = nil
+    end
+    
+    HomeTeleport.currentBoundVehicleId = vehicleId
+    HomeTeleport.boundVehicles = {}
+    HomeTeleport.boundVehicles[vehicleId] = true
+    HomeTeleport.saveHomePosition()
+    
+    return true
+end
+
+-- **********************************************************************************
+-- 解绑车辆
+-- **********************************************************************************
+function HomeTeleport.unbindVehicle(vehicleId)
+    if not vehicleId then return end
+    
+    if HomeTeleport.boundVehicles[vehicleId] then
+        HomeTeleport.boundVehicles[vehicleId] = nil
+    end
+    
+    if HomeTeleport.currentBoundVehicleId == vehicleId then
+        HomeTeleport.currentBoundVehicleId = nil
+    end
+    
+    if HomeTeleport.wasInVehicleLastPos and HomeTeleport.wasInVehicleLastPos.vehicleId == vehicleId then
+        HomeTeleport.wasInVehicle = false
+        HomeTeleport.wasInVehicleLastPos = nil
+    end
+    
+    HomeTeleport.saveHomePosition()
+end
+
+-- **********************************************************************************
+-- 检查车辆是否已绑定
+-- **********************************************************************************
+function HomeTeleport.isVehicleBound(vehicleId)
+    return HomeTeleport.boundVehicles[vehicleId] ~= nil
 end
 
 -- **********************************************************************************
@@ -251,13 +387,48 @@ end
 local showRadialMenuFix = ISVehicleMenu.showRadialMenu
 function ISVehicleMenu.showRadialMenu(playerObj)
     showRadialMenuFix(playerObj)
-    if playerObj:getVehicle() and HomeTeleport.isHomeSet then
-        getPlayerRadialMenu(playerObj:getPlayerNum()):addSlice(
-            getText("UI_HomeTeleport_GoHome"),
-            getTexture("media/ui/home_icon.png"),
-            HomeTeleport.goHome,
-            playerObj
-        )
+    local menu = getPlayerRadialMenu(playerObj:getPlayerNum())
+    
+    if playerObj:getVehicle() then
+        local sandboxOptions = getSandboxOptions()
+        local limitOption = sandboxOptions and sandboxOptions:getOptionByName("HomeTeleport.VehicleBindLimit")
+        local limited = limitOption and limitOption:getValue()
+        
+        local vehicle = playerObj:getVehicle()
+        local vehicleId = vehicle:getId()
+        local isBound = HomeTeleport.isVehicleBound(vehicleId)
+        
+        -- 如果已设置家，根据限制模式显示不同选项
+        if HomeTeleport.isHomeSet then
+            if limited ~= false then
+                -- 限制模式：只在已绑定的车辆上显示回家选项
+                if isBound then
+                    menu:addSlice(
+                        getText("UI_HomeTeleport_GoHome"),
+                        getTexture("media/ui/home_icon.png"),
+                        HomeTeleport.goHome,
+                        playerObj
+                    )
+                else
+                    -- 未绑定的车辆显示绑定选项（带确认对话框）
+                    menu:addSlice(
+                        getText("UI_HomeTeleport_BindVehicle"),
+                        getTexture("media/ui/car_icon.png"),
+                        function()
+                            HomeTeleport.showBindVehicleConfirmation(vehicle, playerObj)
+                        end
+                    )
+                end
+            else
+                -- 非限制模式：所有车辆都能回家，不显示绑定菜单
+                menu:addSlice(
+                    getText("UI_HomeTeleport_GoHome"),
+                    getTexture("media/ui/home_icon.png"),
+                    HomeTeleport.goHome,
+                    playerObj
+                )
+            end
+        end
     end
 end
 
