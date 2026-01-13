@@ -4,7 +4,7 @@
 [h2]使用方法[/h2]
 [list]
     [*] 设置家的位置：在地面上右键点击，选择"设置家的位置"
-    [*] 传送回家：在车辆上按径向菜单（默认R键），选择回家图标
+    [*] 传送回家：在车辆上按V键，选择回家图标
     [*] 返回车辆：从车辆传送回家后，在世界界面右键点击选择"返回车辆"
 [/list]
 [h2]功能特点[/h2]
@@ -38,7 +38,7 @@ During my experience with RV mods, I frequently encountered situations where the
 [h2]How to Use[/h2]
 [list]
     [*] Set Home Location: Right-click on the ground and select "Set Home Location"
-    [*] Teleport Home: Use the radial menu (default R key) in vehicles and select the home icon
+    [*] Teleport Home: Press V key in vehicles and select the home icon
     [*] Return to Vehicle: After teleporting from a vehicle, right-click in the world and select "Return to Vehicle"
 [/list]
 [h2]Features[/h2]
