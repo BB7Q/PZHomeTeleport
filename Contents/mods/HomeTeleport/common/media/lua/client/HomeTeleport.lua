@@ -40,8 +40,6 @@ function HomeTeleport.loadHomePosition()
             HomeTeleport.wasInVehicle = data.wasInVehicle or false
             HomeTeleport.wasInVehicleLastPos = data.wasInVehicleLastPos or nil
             
-
-            
             print("Loaded bound vehicle ID: " .. tostring(data.currentBoundVehicleId or nil))
             print("Loaded wasInVehicle: " .. tostring(data.wasInVehicle or false))
             if data.wasInVehicleLastPos then
@@ -105,8 +103,6 @@ function HomeTeleport.saveHomePosition()
     -- 保存返回位置数据
     data.wasInVehicle = HomeTeleport.wasInVehicle
     data.wasInVehicleLastPos = HomeTeleport.wasInVehicleLastPos
-    
-
     
     ModData.transmit("HomeTeleport")
 end
@@ -293,18 +289,7 @@ function HomeTeleport.showBindVehicleConfirmation(vehicle, playerObj)
     HomeTeleport.showConfirmationDialog(
         confirmText,
         function()
-            local vehiclePersistentId = HomeTeleport.ensureVehiclePersistentId(vehicle)
-            
-            -- 如果更换了绑定车辆，重置返回数据
-            if HomeTeleport.currentBoundVehicleId and HomeTeleport.currentBoundVehicleId ~= vehiclePersistentId then
-                HomeTeleport.wasInVehicle = false
-                HomeTeleport.wasInVehicleLastPos = nil
-            end
-            
-            HomeTeleport.currentBoundVehicleId = vehiclePersistentId
-            HomeTeleport.saveVehicleBindings()
-            
-            playerObj:Say(getText("UI_HomeTeleport_BindSuccess"))
+            HomeTeleport.bindVehicle(vehicle, playerObj)
         end
     )
 end
@@ -312,9 +297,8 @@ end
 -- **********************************************************************************
 -- 绑定车辆（如果限制模式开启，直接更换绑定）
 -- **********************************************************************************
-function HomeTeleport.bindVehicle(vehicle)
-    local player = getPlayer()
-    if not player or not vehicle then return false end
+function HomeTeleport.bindVehicle(vehicle, playerObj)
+    if not vehicle then return false end
     
     -- 使用持久化ID作为绑定ID，而不是真实车辆ID
     local persistentId = HomeTeleport.ensureVehiclePersistentId(vehicle)
@@ -327,6 +311,11 @@ function HomeTeleport.bindVehicle(vehicle)
     
     HomeTeleport.currentBoundVehicleId = persistentId
     HomeTeleport.saveVehicleBindings()
+    HomeTeleport.saveHomePosition()  -- 同时保存返回位置数据的清除状态
+    
+    if playerObj then
+        playerObj:Say(getText("UI_HomeTeleport_BindSuccess"))
+    end
     
     return true
 end
@@ -376,32 +365,6 @@ function HomeTeleport.ensureVehiclePersistentId(vehicle)
 end
 
 -- **********************************************************************************
--- 在指定位置查找指定持久化ID的车辆
--- **********************************************************************************
-function HomeTeleport.findVehicleAtPosition(position, persistentId)
-    if not position or not persistentId then return nil end
-    
-    local square = getCell():getGridSquare(position.x, position.y, position.z)
-    if not square then return nil end
-    
-    -- 使用正确的API获取车辆
-    local vehicle = square:getVehicle()
-    if vehicle then
-        local vmd = vehicle:getModData()
-        -- 确保类型一致进行比较
-        if vmd.homeTeleport_persistentId then
-            local storedId = tostring(vmd.homeTeleport_persistentId)
-            local targetId = tostring(persistentId)
-            if storedId == targetId then
-                return vehicle
-            end
-        end
-    end
-    
-    return nil
-end
-
--- **********************************************************************************
 -- 座位返回函数（参照RV模组的ReturnPlayerToSeat实现）
 -- **********************************************************************************
 function HomeTeleport.returnPlayerToSeat(player, seat, persistentId)
@@ -434,6 +397,7 @@ function HomeTeleport.returnPlayerToSeat(player, seat, persistentId)
                                 -- 清理临时返回数据
                                 HomeTeleport.wasInVehicle = false
                                 HomeTeleport.wasInVehicleLastPos = nil
+                                HomeTeleport.saveHomePosition()  -- 保存清除后的状态
                                 
                                 print("Successfully returned to seat " .. seat)
                                 Events.OnPlayerUpdate.Remove(doReenterSeat)
