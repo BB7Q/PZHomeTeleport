@@ -9,7 +9,7 @@ HomeTeleport.useSandboxHome = false
 HomeTeleport.currentBoundVehicleId = nil
 
 -- **********************************************************************************
--- 加载保存的家的位置
+-- 加载保存的家的位置和车辆数据
 -- **********************************************************************************
 function HomeTeleport.loadHomePosition()
     local player = getPlayer()
@@ -33,19 +33,21 @@ function HomeTeleport.loadHomePosition()
                 print("No home position data found in ModData")
             end
             
-            -- 加载车辆绑定数据（无论限制模式如何，都先加载）
+            -- 加载车辆绑定数据
             HomeTeleport.currentBoundVehicleId = data.currentBoundVehicleId or nil
             
             -- 加载返回位置数据
             HomeTeleport.wasInVehicle = data.wasInVehicle or false
             HomeTeleport.wasInVehicleLastPos = data.wasInVehicleLastPos or nil
             
+
+            
             print("Loaded bound vehicle ID: " .. tostring(data.currentBoundVehicleId or nil))
             print("Loaded wasInVehicle: " .. tostring(data.wasInVehicle or false))
             if data.wasInVehicleLastPos then
                 print("Loaded wasInVehicleLastPos:")
                 print("  Position: (" .. data.wasInVehicleLastPos.x .. ", " .. data.wasInVehicleLastPos.y .. ", " .. data.wasInVehicleLastPos.z .. ")")
-                print("  Vehicle ID: " .. tostring(data.wasInVehicleLastPos.vehicleId))
+                print("  Persistent ID: " .. tostring(data.wasInVehicleLastPos.persistentId))
                 print("  Seat Index: " .. tostring(data.wasInVehicleLastPos.seatIndex))
             else
                 print("No wasInVehicleLastPos data found")
@@ -89,7 +91,7 @@ function HomeTeleport.loadHomePosition()
 end
 
 -- **********************************************************************************
--- 保存家的位置
+-- 保存家的位置和车辆数据
 -- **********************************************************************************
 function HomeTeleport.saveHomePosition()
     if not ModData.exists("HomeTeleport") then
@@ -103,6 +105,8 @@ function HomeTeleport.saveHomePosition()
     -- 保存返回位置数据
     data.wasInVehicle = HomeTeleport.wasInVehicle
     data.wasInVehicleLastPos = HomeTeleport.wasInVehicleLastPos
+    
+
     
     ModData.transmit("HomeTeleport")
 end
@@ -200,7 +204,7 @@ function HomeTeleport.setHome()
 end
 
 -- **********************************************************************************
--- 传送回家
+-- 传送回家（改进版本，支持车辆ID持久化）
 -- **********************************************************************************
 function HomeTeleport.goHome()
     if not HomeTeleport.isHomeSet then
@@ -216,12 +220,14 @@ function HomeTeleport.goHome()
     print("Current Player Position: (" .. player:getX() .. ", " .. player:getY() .. ", " .. player:getZ() .. ")")
     print("Home Position: (" .. HomeTeleport.homePosition.x .. ", " .. HomeTeleport.homePosition.y .. ", " .. HomeTeleport.homePosition.z .. ")")
 
-    -- 记录车辆信息
+    -- 记录车辆信息（改进版本）
     local currentVehicle = player:getVehicle()
     if currentVehicle then
         print("Player is in vehicle")
-        print("Vehicle ID: " .. currentVehicle:getId())
         print("Vehicle Position: (" .. currentVehicle:getX() .. ", " .. currentVehicle:getY() .. ", " .. currentVehicle:getZ() .. ")")
+        
+        -- 生成车辆持久化ID
+        local persistentId = HomeTeleport.ensureVehiclePersistentId(currentVehicle)
         
         HomeTeleport.wasInVehicle = true
         local seatIndex = 0
@@ -231,22 +237,26 @@ function HomeTeleport.goHome()
                 break
             end
         end
+        
+        -- 改进的记录数据，包含持久化ID
         HomeTeleport.wasInVehicleLastPos = {
             x = player:getX(),
             y = player:getY(),
             z = player:getZ(),
-            vehicleId = currentVehicle:getId(),
+            persistentId = persistentId,
             seatIndex = seatIndex
         }
+        
         print("Recorded vehicle info:")
         print("  Recorded Position: (" .. player:getX() .. ", " .. player:getY() .. ", " .. player:getZ() .. ")")
-        print("  Recorded Vehicle ID: " .. currentVehicle:getId())
+        print("  Persistent Vehicle ID: " .. persistentId)
         print("  Seat Index: " .. seatIndex)
         
         currentVehicle:exit(player)
     else
         print("Player is not in vehicle")
         HomeTeleport.wasInVehicle = false
+        HomeTeleport.wasInVehicleLastPos = nil
     end
 
     -- 传送
@@ -259,6 +269,9 @@ function HomeTeleport.goHome()
 
     print("Teleported to home position")
     player:Say(getText("UI_HomeTeleport_GoHomeSuccess"))
+    
+    -- 保存数据
+    HomeTeleport.saveHomePosition()
 end
 
 -- **********************************************************************************
@@ -272,22 +285,23 @@ function HomeTeleport.showBindVehicleConfirmation(vehicle, playerObj)
     local confirmText = getText("UI_HomeTeleport_ConfirmBindVehicle")
     
     -- 如果限制模式开启且已绑定其他车辆，显示更换绑定的提示
-    if limited == true and HomeTeleport.currentBoundVehicleId and HomeTeleport.currentBoundVehicleId ~= vehicle:getId() then
+    local vehiclePersistentId = HomeTeleport.ensureVehiclePersistentId(vehicle)
+    if limited == true and HomeTeleport.currentBoundVehicleId and HomeTeleport.currentBoundVehicleId ~= vehiclePersistentId then
         confirmText = getText("UI_HomeTeleport_ConfirmRebindVehicle")
     end
     
     HomeTeleport.showConfirmationDialog(
         confirmText,
         function()
-            local vehicleId = vehicle:getId()
+            local vehiclePersistentId = HomeTeleport.ensureVehiclePersistentId(vehicle)
             
             -- 如果更换了绑定车辆，重置返回数据
-            if HomeTeleport.currentBoundVehicleId and HomeTeleport.currentBoundVehicleId ~= vehicleId then
+            if HomeTeleport.currentBoundVehicleId and HomeTeleport.currentBoundVehicleId ~= vehiclePersistentId then
                 HomeTeleport.wasInVehicle = false
                 HomeTeleport.wasInVehicleLastPos = nil
             end
             
-            HomeTeleport.currentBoundVehicleId = vehicleId
+            HomeTeleport.currentBoundVehicleId = vehiclePersistentId
             HomeTeleport.saveVehicleBindings()
             
             playerObj:Say(getText("UI_HomeTeleport_BindSuccess"))
@@ -302,15 +316,16 @@ function HomeTeleport.bindVehicle(vehicle)
     local player = getPlayer()
     if not player or not vehicle then return false end
     
-    local vehicleId = vehicle:getId()
+    -- 使用持久化ID作为绑定ID，而不是真实车辆ID
+    local persistentId = HomeTeleport.ensureVehiclePersistentId(vehicle)
     
     -- 如果更换了绑定车辆，重置返回数据
-    if HomeTeleport.currentBoundVehicleId and HomeTeleport.currentBoundVehicleId ~= vehicleId then
+    if HomeTeleport.currentBoundVehicleId and HomeTeleport.currentBoundVehicleId ~= persistentId then
         HomeTeleport.wasInVehicle = false
         HomeTeleport.wasInVehicleLastPos = nil
     end
     
-    HomeTeleport.currentBoundVehicleId = vehicleId
+    HomeTeleport.currentBoundVehicleId = persistentId
     HomeTeleport.saveVehicleBindings()
     
     return true
@@ -319,14 +334,14 @@ end
 -- **********************************************************************************
 -- 解绑车辆
 -- **********************************************************************************
-function HomeTeleport.unbindVehicle(vehicleId)
-    if not vehicleId then return end
+function HomeTeleport.unbindVehicle(persistentId)
+    if not persistentId then return end
     
-    if HomeTeleport.currentBoundVehicleId == vehicleId then
+    if HomeTeleport.currentBoundVehicleId == persistentId then
         HomeTeleport.currentBoundVehicleId = nil
     end
     
-    if HomeTeleport.wasInVehicleLastPos and HomeTeleport.wasInVehicleLastPos.vehicleId == vehicleId then
+    if HomeTeleport.wasInVehicleLastPos and HomeTeleport.wasInVehicleLastPos.persistentId == persistentId then
         HomeTeleport.wasInVehicle = false
         HomeTeleport.wasInVehicleLastPos = nil
     end
@@ -337,12 +352,105 @@ end
 -- **********************************************************************************
 -- 检查车辆是否已绑定
 -- **********************************************************************************
-function HomeTeleport.isVehicleBound(vehicleId)
-    return HomeTeleport.currentBoundVehicleId == vehicleId
+function HomeTeleport.isVehicleBound(vehicle)
+    if not vehicle then return false end
+    local persistentId = HomeTeleport.ensureVehiclePersistentId(vehicle)
+    return HomeTeleport.currentBoundVehicleId == persistentId
 end
 
 -- **********************************************************************************
--- 返回离开位置
+-- 车辆ID持久化机制（参考RV模组）
+-- **********************************************************************************
+function HomeTeleport.ensureVehiclePersistentId(vehicle)
+    if not vehicle then return nil end
+    
+    local vmd = vehicle:getModData()
+    
+    -- 如果车辆ModData中没有持久化ID，生成一个（完全参考RV模组）
+    if not vmd.homeTeleport_persistentId then
+        vmd.homeTeleport_persistentId = ZombRand(1, 99999999)
+        print("Generated persistent ID for vehicle: " .. tostring(vmd.homeTeleport_persistentId))
+    end
+    
+    return tostring(vmd.homeTeleport_persistentId)
+end
+
+-- **********************************************************************************
+-- 在指定位置查找指定持久化ID的车辆
+-- **********************************************************************************
+function HomeTeleport.findVehicleAtPosition(position, persistentId)
+    if not position or not persistentId then return nil end
+    
+    local square = getCell():getGridSquare(position.x, position.y, position.z)
+    if not square then return nil end
+    
+    -- 使用正确的API获取车辆
+    local vehicle = square:getVehicle()
+    if vehicle then
+        local vmd = vehicle:getModData()
+        -- 确保类型一致进行比较
+        if vmd.homeTeleport_persistentId then
+            local storedId = tostring(vmd.homeTeleport_persistentId)
+            local targetId = tostring(persistentId)
+            if storedId == targetId then
+                return vehicle
+            end
+        end
+    end
+    
+    return nil
+end
+
+-- **********************************************************************************
+-- 座位返回函数（参照RV模组的ReturnPlayerToSeat实现）
+-- **********************************************************************************
+function HomeTeleport.returnPlayerToSeat(player, seat, persistentId)
+    if not player or seat < 0 or not persistentId then return end
+    
+    local function doReenterSeat()
+        local square = player:getCurrentSquare()
+        if not square then return end
+        
+        -- 在玩家周围3x3范围内搜索车辆（参照RV模组）
+        for i = -1, 1 do
+            for k = -1, 1 do
+                local sq = getCell():getGridSquare(player:getX() + i, player:getY() + k, player:getZ())
+                if sq then
+                    local vehicle = sq:getVehicleContainer()
+                    if vehicle ~= nil then
+                        local vmd = vehicle:getModData()
+                        -- 确保类型一致进行比较
+                        if vmd.homeTeleport_persistentId then
+                            local storedId = tostring(vmd.homeTeleport_persistentId)
+                            local targetId = tostring(persistentId)
+                            if storedId == targetId then
+                                -- 进入车辆
+                                vehicle:enter(seat, player)
+                                vehicle:setCharacterPosition(player, seat, "inside")
+                                vehicle:switchSeat(player, seat)
+                                sendSwitchSeat(vehicle, player, 0, seat)
+                                triggerEvent("OnSwitchVehicleSeat", player)
+                                
+                                -- 清理临时返回数据
+                                HomeTeleport.wasInVehicle = false
+                                HomeTeleport.wasInVehicleLastPos = nil
+                                
+                                print("Successfully returned to seat " .. seat)
+                                Events.OnPlayerUpdate.Remove(doReenterSeat)
+                                return
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    Events.OnPlayerUpdate.Add(doReenterSeat)
+end
+
+-- **********************************************************************************
+-- 返回离开位置（改进版本，使用车辆ID持久化和重试机制）
 -- **********************************************************************************
 function HomeTeleport.returnToLastPosition()
     if not HomeTeleport.wasInVehicle or not HomeTeleport.wasInVehicleLastPos then
@@ -368,108 +476,32 @@ function HomeTeleport.returnToLastPosition()
     print("Current Bound Vehicle ID: " .. tostring(HomeTeleport.currentBoundVehicleId))
     print("Recorded Position Info:")
     print("  Coordinates: (" .. pos.x .. ", " .. pos.y .. ", " .. pos.z .. ")")
-    print("  Vehicle ID: " .. tostring(pos.vehicleId))
+    print("  Persistent ID: " .. tostring(pos.persistentId))
     print("  Seat Index: " .. tostring(pos.seatIndex))
     
-    if limited == true then
-        print("Mode: Restricted Mode")
-        -- 限制模式：优先使用当前绑定的车辆
-        if HomeTeleport.currentBoundVehicleId then
-            local vehicles = getCell():getVehicles()
-            local foundVehicle = false
-            
-            for i = 0, vehicles:size() - 1 do
-                local v = vehicles:get(i)
-                if v:getId() == HomeTeleport.currentBoundVehicleId then
-                    print("Found bound vehicle, teleporting via vehicle")
-                    print("Vehicle ID: " .. v:getId())
-                    print("Vehicle Position: (" .. v:getX() .. ", " .. v:getY() .. ", " .. v:getZ() .. ")")
-                    foundVehicle = true
-                    
-                    player:setX(v:getX())
-                    player:setY(v:getY())
-                    player:setZ(v:getZ())
-                    player:setLastX(v:getX())
-                    player:setLastY(v:getY())
-                    player:setLastZ(v:getZ())
+    -- 简化逻辑：统一处理两种模式
+    -- 先传送到记录的位置
+    player:setX(pos.x)
+    player:setY(pos.y)
+    player:setZ(pos.z)
+    player:setLastX(pos.x)
+    player:setLastY(pos.y)
+    player:setLastZ(pos.z)
 
-                    player:Say(getText("UI_HomeTeleport_ReturnSuccess"))
-                    v:enter(pos.seatIndex or 0, player)
-                    v:setCharacterPosition(player, pos.seatIndex or 0, "inside")
-                    v:switchSeat(player, pos.seatIndex or 0)
-                    sendSwitchSeat(v, player, 0, pos.seatIndex or 0)
-                    triggerEvent("OnSwitchVehicleSeat", player)
-                    
-                    HomeTeleport.wasInVehicle = false
-                    HomeTeleport.wasInVehicleLastPos = nil
-                    return
-                end
-            end
-            
-            if not foundVehicle then
-                print("Bound vehicle not found, teleporting via position")
-            end
-        else
-            print("No bound vehicle, teleporting via position")
-        end
-        
-        -- 限制模式下没有找到绑定的车辆，直接返回到记录的位置
-        player:setX(pos.x)
-        player:setY(pos.y)
-        player:setZ(pos.z)
-        player:setLastX(pos.x)
-        player:setLastY(pos.y)
-        player:setLastZ(pos.z)
-        player:Say(getText("UI_HomeTeleport_ReturnSuccess"))
+    player:Say(getText("UI_HomeTeleport_ReturnSuccess"))
+    
+    -- 传送后使用RV模组方式的座位返回机制
+    if pos.persistentId then
+        HomeTeleport.returnPlayerToSeat(player, pos.seatIndex or 0, pos.persistentId)
+        print("Started vehicle seat return process for persistent ID: " .. pos.persistentId)
+        return
     else
-        print("Mode: Unrestricted Mode")
-        -- 非限制模式：尝试使用之前记录的车辆
-        local vehicles = getCell():getVehicles()
-        local returnVehicle = nil
-        
-        for i = 0, vehicles:size() - 1 do
-            local v = vehicles:get(i)
-            if v:getId() == pos.vehicleId then
-                returnVehicle = v
-                break
-            end
-        end
-        
-        if returnVehicle then
-            print("Found recorded vehicle, teleporting via vehicle")
-            player:setX(returnVehicle:getX())
-            player:setY(returnVehicle:getY())
-            player:setZ(returnVehicle:getZ())
-            player:setLastX(returnVehicle:getX())
-            player:setLastY(returnVehicle:getY())
-            player:setLastZ(returnVehicle:getZ())
-
-            player:Say(getText("UI_HomeTeleport_ReturnSuccess"))
-            returnVehicle:enter(pos.seatIndex or 0, player)
-            returnVehicle:setCharacterPosition(player, pos.seatIndex or 0, "inside")
-            returnVehicle:switchSeat(player, pos.seatIndex or 0)
-            sendSwitchSeat(returnVehicle, player, 0, pos.seatIndex or 0)
-            triggerEvent("OnSwitchVehicleSeat", player)
-            
-            HomeTeleport.wasInVehicle = false
-            HomeTeleport.wasInVehicleLastPos = nil
-            print("Return completed")
-            return
-        else
-            print("Recorded vehicle not found, teleporting via position")
-            -- 没有找到记录的车辆，直接返回到记录的位置
-            player:setX(pos.x)
-            player:setY(pos.y)
-            player:setZ(pos.z)
-            player:setLastX(pos.x)
-            player:setLastY(pos.y)
-            player:setLastZ(pos.z)
-            player:Say(getText("UI_HomeTeleport_ReturnSuccess"))
-        end
+        print("No persistent ID available, cannot find vehicle")
     end
     
     HomeTeleport.wasInVehicle = false
     HomeTeleport.wasInVehicleLastPos = nil
+    HomeTeleport.saveHomePosition()
     print("Return completed")
 end
 
@@ -520,8 +552,7 @@ function ISVehicleMenu.showRadialMenu(playerObj)
         local limited = limitOption and limitOption:getValue()
         
         local vehicle = playerObj:getVehicle()
-        local vehicleId = vehicle:getId()
-        local isBound = HomeTeleport.isVehicleBound(vehicleId)
+        local isBound = HomeTeleport.isVehicleBound(vehicle)
         
         -- 如果已设置家，根据限制模式显示不同选项
         if HomeTeleport.isHomeSet then
