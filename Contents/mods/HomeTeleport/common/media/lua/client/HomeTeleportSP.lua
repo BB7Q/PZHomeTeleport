@@ -1,5 +1,4 @@
--- 添加回家功能（只支持车辆上回家）
-
+if isServer() or isClient() then return end
 HomeTeleport = {}
 HomeTeleport.homePosition = {x = 0, y = 0, z = 0}
 HomeTeleport.isHomeSet = false
