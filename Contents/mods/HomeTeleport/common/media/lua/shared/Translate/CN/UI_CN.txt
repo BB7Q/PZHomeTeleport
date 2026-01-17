@@ -16,5 +16,14 @@ UI_CN = {
     UI_HomeTeleport_BindVehicle = "绑定车辆传送",
     UI_HomeTeleport_BindSuccess = "车辆绑定成功！",
     UI_HomeTeleport_ConfirmBindVehicle = "确定要绑定这辆车的传送功能吗？",
-    UI_HomeTeleport_ConfirmRebindVehicle = "确定要更换绑定的车辆吗？这将解除之前车辆的绑定。"
+    UI_HomeTeleport_ConfirmRebindVehicle = "确定要更换绑定的车辆吗？这将解除之前车辆的绑定。",
+    
+    -- 多人模式专用文本
+    UI_HomeTeleport_DataNotSynced = "数据尚未同步，请稍后重试",
+    UI_HomeTeleport_MustInVehicle = "必须在车辆中才能使用回家功能！",
+    UI_HomeTeleport_ZombieNearby = "周围有僵尸，无法传送！",
+    UI_HomeTeleport_InvalidPosition = "无效的位置数据",
+    UI_HomeTeleport_InvalidVehicle = "无效的车辆ID",
+    UI_HomeTeleport_UnknownCommand = "未知命令：",
+    UI_HomeTeleport_UnbindSuccess = "车辆解绑成功！"
 }

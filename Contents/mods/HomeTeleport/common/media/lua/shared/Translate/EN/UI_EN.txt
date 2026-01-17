@@ -16,5 +16,14 @@ UI_EN = {
     UI_HomeTeleport_BindVehicle = "Bind Vehicle for Teleport",
     UI_HomeTeleport_BindSuccess = "Vehicle bound successfully!",
     UI_HomeTeleport_ConfirmBindVehicle = "Are you sure you want to bind this vehicle for teleport?",
-    UI_HomeTeleport_ConfirmRebindVehicle = "Are you sure you want to change the bound vehicle? This will unbind the previous vehicle."
+    UI_HomeTeleport_ConfirmRebindVehicle = "Are you sure you want to change the bound vehicle? This will unbind the previous vehicle.",
+    
+    -- Multiplayer specific texts
+    UI_HomeTeleport_DataNotSynced = "Data not synchronized yet, please try again later",
+    UI_HomeTeleport_MustInVehicle = "You must be in a vehicle to use the go home function!",
+    UI_HomeTeleport_ZombieNearby = "Zombies nearby, cannot teleport!",
+    UI_HomeTeleport_InvalidPosition = "Invalid position data",
+    UI_HomeTeleport_InvalidVehicle = "Invalid vehicle ID",
+    UI_HomeTeleport_UnknownCommand = "Unknown command:",
+    UI_HomeTeleport_UnbindSuccess = "Vehicle unbound successfully!"
 }
