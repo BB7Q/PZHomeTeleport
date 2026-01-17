@@ -1,2 +1,1 @@
--- HomeTeleport Mod - Server Side Script
--- 纯单人模式，无需服务端逻辑
+if not isServer() then return end
