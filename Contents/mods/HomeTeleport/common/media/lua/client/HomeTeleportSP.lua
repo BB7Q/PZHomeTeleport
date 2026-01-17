@@ -14,9 +14,6 @@ function HomeTeleport.loadHomePosition()
     local player = getPlayer()
     if not player then return end
 
-    -- 打印初始化调试信息
-    print("=== HomeTeleport Initialization Debug Info ===")
-
     -- 从 ModData 加载
     if ModData.exists("HomeTeleport") then
         local data = ModData.get("HomeTeleport")
@@ -25,11 +22,6 @@ function HomeTeleport.loadHomePosition()
             if data.homePosition then
                 HomeTeleport.homePosition = data.homePosition
                 HomeTeleport.isHomeSet = data.isHomeSet or false
-                print("Loaded home position from ModData:")
-                print("  Home Position: (" .. data.homePosition.x .. ", " .. data.homePosition.y .. ", " .. data.homePosition.z .. ")")
-                print("  Is Home Set: " .. tostring(data.isHomeSet or false))
-            else
-                print("No home position data found in ModData")
             end
             
             -- 加载车辆绑定数据
@@ -38,20 +30,7 @@ function HomeTeleport.loadHomePosition()
             -- 加载返回位置数据
             HomeTeleport.wasInVehicle = data.wasInVehicle or false
             HomeTeleport.wasInVehicleLastPos = data.wasInVehicleLastPos or nil
-            
-            print("Loaded bound vehicle ID: " .. tostring(data.currentBoundVehicleId or nil))
-            print("Loaded wasInVehicle: " .. tostring(data.wasInVehicle or false))
-            if data.wasInVehicleLastPos then
-                print("Loaded wasInVehicleLastPos:")
-                print("  Position: (" .. data.wasInVehicleLastPos.x .. ", " .. data.wasInVehicleLastPos.y .. ", " .. data.wasInVehicleLastPos.z .. ")")
-                print("  Persistent ID: " .. tostring(data.wasInVehicleLastPos.persistentId))
-                print("  Seat Index: " .. tostring(data.wasInVehicleLastPos.seatIndex))
-            else
-                print("No wasInVehicleLastPos data found")
-            end
         end
-    else
-        print("No HomeTeleport ModData found")
     end
 
     -- 检查sandbox配置
@@ -68,22 +47,7 @@ function HomeTeleport.loadHomePosition()
             HomeTeleport.homePosition.y = yOption and yOption:getValue() or 0
             HomeTeleport.homePosition.z = zOption and zOption:getValue() or 0
             HomeTeleport.isHomeSet = true
-            print("Sandbox home position enabled:")
-            print("  Sandbox Home Position: (" .. HomeTeleport.homePosition.x .. ", " .. HomeTeleport.homePosition.y .. ", " .. HomeTeleport.homePosition.z .. ")")
-        else
-            print("Sandbox home position disabled")
         end
-    else
-        print("No sandbox options found")
-    end
-
-    -- 打印最终绑定信息
-    print("Final initialization results:")
-    print("  Current Bound Vehicle ID: " .. tostring(HomeTeleport.currentBoundVehicleId))
-    print("  Is Home Set: " .. tostring(HomeTeleport.isHomeSet))
-    print("  Use Sandbox Home: " .. tostring(HomeTeleport.useSandboxHome))
-    if HomeTeleport.isHomeSet then
-        print("  Home Position: (" .. HomeTeleport.homePosition.x .. ", " .. HomeTeleport.homePosition.y .. ", " .. HomeTeleport.homePosition.z .. ")")
     end
 end
 
@@ -210,17 +174,9 @@ function HomeTeleport.goHome()
     local player = getPlayer()
     if not player then return end
 
-    -- 打印回家调试信息
-    print("=== HomeTeleport Go Home Debug Info ===")
-    print("Current Player Position: (" .. player:getX() .. ", " .. player:getY() .. ", " .. player:getZ() .. ")")
-    print("Home Position: (" .. HomeTeleport.homePosition.x .. ", " .. HomeTeleport.homePosition.y .. ", " .. HomeTeleport.homePosition.z .. ")")
-
     -- 记录车辆信息（改进版本）
     local currentVehicle = player:getVehicle()
     if currentVehicle then
-        print("Player is in vehicle")
-        print("Vehicle Position: (" .. currentVehicle:getX() .. ", " .. currentVehicle:getY() .. ", " .. currentVehicle:getZ() .. ")")
-        
         -- 生成车辆持久化ID
         local persistentId = HomeTeleport.ensureVehiclePersistentId(currentVehicle)
         
@@ -242,14 +198,8 @@ function HomeTeleport.goHome()
             seatIndex = seatIndex
         }
         
-        print("Recorded vehicle info:")
-        print("  Recorded Position: (" .. player:getX() .. ", " .. player:getY() .. ", " .. player:getZ() .. ")")
-        print("  Persistent Vehicle ID: " .. persistentId)
-        print("  Seat Index: " .. seatIndex)
-        
         currentVehicle:exit(player)
     else
-        print("Player is not in vehicle")
         HomeTeleport.wasInVehicle = false
         HomeTeleport.wasInVehicleLastPos = nil
     end
@@ -262,7 +212,6 @@ function HomeTeleport.goHome()
     player:setLastY(HomeTeleport.homePosition.y)
     player:setLastZ(HomeTeleport.homePosition.z)
 
-    print("Teleported to home position")
     player:Say(getText("UI_HomeTeleport_GoHomeSuccess"))
     
     -- 保存数据
@@ -357,7 +306,6 @@ function HomeTeleport.ensureVehiclePersistentId(vehicle)
     -- 如果车辆ModData中没有持久化ID，生成一个（完全参考RV模组）
     if not vmd.homeTeleport_persistentId then
         vmd.homeTeleport_persistentId = ZombRand(1, 99999999)
-        print("Generated persistent ID for vehicle: " .. tostring(vmd.homeTeleport_persistentId))
     end
     
     return tostring(vmd.homeTeleport_persistentId)
@@ -429,20 +377,7 @@ function HomeTeleport.returnToLastPosition()
     end
 
     local pos = HomeTeleport.wasInVehicleLastPos
-    local sandboxOptions = getSandboxOptions()
-    local limitOption = sandboxOptions and sandboxOptions:getOptionByName("HomeTeleport.VehicleBindLimit")
-    local limited = limitOption and limitOption:getValue()
     
-    -- 打印调试信息
-    print("=== HomeTeleport Return Debug Info ===")
-    print("Restricted Mode: " .. tostring(limited))
-    print("Current Bound Vehicle ID: " .. tostring(HomeTeleport.currentBoundVehicleId))
-    print("Recorded Position Info:")
-    print("  Coordinates: (" .. pos.x .. ", " .. pos.y .. ", " .. pos.z .. ")")
-    print("  Persistent ID: " .. tostring(pos.persistentId))
-    print("  Seat Index: " .. tostring(pos.seatIndex))
-    
-    -- 简化逻辑：统一处理两种模式
     -- 先传送到记录的位置
     player:setX(pos.x)
     player:setY(pos.y)
@@ -456,16 +391,12 @@ function HomeTeleport.returnToLastPosition()
     -- 传送后使用RV模组方式的座位返回机制
     if pos.persistentId then
         HomeTeleport.returnPlayerToSeat(player, pos.seatIndex or 0, pos.persistentId)
-        print("Started vehicle seat return process for persistent ID: " .. pos.persistentId)
         return
-    else
-        print("No persistent ID available, cannot find vehicle")
     end
     
     HomeTeleport.wasInVehicle = false
     HomeTeleport.wasInVehicleLastPos = nil
     HomeTeleport.saveHomePosition()
-    print("Return completed")
 end
 
 -- **********************************************************************************
